@@ -49,6 +49,23 @@
   </section>
 </main>
 
+<div class="crop-modal" id="cropModal">
+  <div class="crop-box">
+    <h3>Обрезка фотографии</h3>
+    <p>Выделите мышью нужную область. Соотношение — 16:9.</p>
+
+    <div class="crop-area" id="cropArea">
+      <img id="cropImage" alt="Фото для обрезки">
+      <div class="crop-selection" id="cropSelection"></div>
+    </div>
+
+    <div class="editor-actions">
+      <button id="cropSave">Обрезать и сохранить</button>
+      <button id="cropCancel">Отмена</button>
+    </div>
+  </div>
+</div>
+
 <script>
   const DEFAULT_DATA = {
     lessons: [
@@ -72,12 +89,14 @@
       {
         type: "news",
         date: "Сегодня",
-        text: "Родительское собрание для 9 классов состоится в 18:00 в актовом зале."
+        text: "Родительское собрание для 9 классов состоится в 18:00 в актовом зале.",
+        photo: ""
       },
       {
         type: "achievement",
         date: "Достижение",
-        text: "Команда 10 «А» заняла 1 место в городском конкурсе по программированию."
+        text: "Команда 10 «А» заняла 1 место в городском конкурсе по программированию.",
+        photo: ""
       }
     ],
     tickerNews: [
@@ -86,6 +105,8 @@
       "Фотокросс состоится в субботу в 11:00."
     ]
   };
+
+  let currentCropItem = null;
 
   function loadData() {
     const saved = localStorage.getItem("schoolDashboardData");
@@ -103,10 +124,7 @@
 
   function timeToMinutes(value) {
     const parts = value.split(":");
-    const hours = Number(parts[0]);
-    const minutes = Number(parts[1]);
-
-    return hours * 60 + minutes;
+    return Number(parts[0]) * 60 + Number(parts[1]);
   }
 
   function minutesToTime(minutes) {
@@ -153,21 +171,10 @@
       const name = createInput(lesson.name, "Название урока");
       const subject = createInput(lesson.subject, "Предмет");
 
-      startTime.onchange = () => {
-        lesson.start = timeToMinutes(startTime.value);
-      };
-
-      endTime.onchange = () => {
-        lesson.end = timeToMinutes(endTime.value);
-      };
-
-      name.oninput = () => {
-        lesson.name = name.value;
-      };
-
-      subject.oninput = () => {
-        lesson.subject = subject.value;
-      };
+      startTime.onchange = () => lesson.start = timeToMinutes(startTime.value);
+      endTime.onchange = () => lesson.end = timeToMinutes(endTime.value);
+      name.oninput = () => lesson.name = name.value;
+      subject.oninput = () => lesson.subject = subject.value;
 
       const removeButton = createRemoveButton(() => {
         data.lessons.splice(index, 1);
@@ -192,17 +199,9 @@
       const room = createInput(schoolClass.room, "Кабинет");
       const teacher = createInput(schoolClass.teacher, "Учитель");
 
-      name.oninput = () => {
-        schoolClass.name = name.value;
-      };
-
-      room.oninput = () => {
-        schoolClass.room = room.value;
-      };
-
-      teacher.oninput = () => {
-        schoolClass.teacher = teacher.value;
-      };
+      name.oninput = () => schoolClass.name = name.value;
+      room.oninput = () => schoolClass.room = room.value;
+      teacher.oninput = () => schoolClass.teacher = teacher.value;
 
       const removeButton = createRemoveButton(() => {
         data.classes.splice(index, 1);
@@ -233,17 +232,14 @@
       const date = createInput(item.date, "Дата");
       const text = createInput(item.text, "Текст");
 
-      type.onchange = () => {
-        item.type = type.value;
-      };
+      const photoButton = document.createElement("button");
+      photoButton.className = "photo-button";
+      photoButton.textContent = item.photo ? "Изменить фото" : "Загрузить фото";
 
-      date.oninput = () => {
-        item.date = date.value;
-      };
-
-      text.oninput = () => {
-        item.text = text.value;
-      };
+      const removePhotoButton = document.createElement("button");
+      removePhotoButton.className = "photo-remove-button";
+      removePhotoButton.textContent = "Убрать фото";
+      removePhotoButton.disabled = !item.photo;
 
       const removeButton = createRemoveButton(() => {
         data.sideNews.splice(index, 1);
@@ -251,7 +247,40 @@
         renderAll();
       });
 
-      row.append(type, date, text, removeButton);
+      type.onchange = () => item.type = type.value;
+      date.oninput = () => item.date = date.value;
+      text.oninput = () => item.text = text.value;
+
+      photoButton.onclick = () => {
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = "image/*";
+
+        fileInput.onchange = () => {
+          const file = fileInput.files[0];
+
+          if (!file) return;
+
+          const reader = new FileReader();
+
+          reader.onload = () => {
+            currentCropItem = item;
+            openCropModal(reader.result);
+          };
+
+          reader.readAsDataURL(file);
+        };
+
+        fileInput.click();
+      };
+
+      removePhotoButton.onclick = () => {
+        item.photo = "";
+        saveData(data);
+        renderAll();
+      };
+
+      row.append(type, date, text, photoButton, removePhotoButton, removeButton);
       box.appendChild(row);
     });
   }
@@ -266,6 +295,128 @@
     document.getElementById("tickerNews").value =
       data.tickerNews.join("\n");
   }
+
+  const cropModal = document.getElementById("cropModal");
+  const cropArea = document.getElementById("cropArea");
+  const cropImage = document.getElementById("cropImage");
+  const cropSelection = document.getElementById("cropSelection");
+
+  let isSelecting = false;
+  let startX = 0;
+  let startY = 0;
+
+  function openCropModal(imageSrc) {
+    cropImage.src = imageSrc;
+    cropSelection.style.display = "none";
+    cropModal.classList.add("active");
+  }
+
+  function closeCropModal() {
+    cropModal.classList.remove("active");
+    cropImage.src = "";
+    currentCropItem = null;
+  }
+
+  cropArea.addEventListener("mousedown", event => {
+    isSelecting = true;
+
+    const rect = cropArea.getBoundingClientRect();
+
+    startX = event.clientX - rect.left;
+    startY = event.clientY - rect.top;
+
+    cropSelection.style.left = `${startX}px`;
+    cropSelection.style.top = `${startY}px`;
+    cropSelection.style.width = "0px";
+    cropSelection.style.height = "0px";
+    cropSelection.style.display = "block";
+  });
+
+  cropArea.addEventListener("mousemove", event => {
+    if (!isSelecting) return;
+
+    const rect = cropArea.getBoundingClientRect();
+
+    let currentX = event.clientX - rect.left;
+    let currentY = event.clientY - rect.top;
+
+    let width = currentX - startX;
+    let height = currentY - startY;
+
+    if (width < 0) {
+      width = Math.abs(width);
+      cropSelection.style.left = `${currentX}px`;
+    }
+
+    if (height < 0) {
+      height = Math.abs(height);
+      cropSelection.style.top = `${currentY}px`;
+    }
+
+    const targetRatio = 16 / 9;
+
+    if (width / height > targetRatio) {
+      height = width / targetRatio;
+    } else {
+      width = height * targetRatio;
+    }
+
+    cropSelection.style.width = `${width}px`;
+    cropSelection.style.height = `${height}px`;
+  });
+
+  window.addEventListener("mouseup", () => {
+    isSelecting = false;
+  });
+
+  document.getElementById("cropSave").onclick = () => {
+    if (!currentCropItem) return;
+
+    const selectionRect = cropSelection.getBoundingClientRect();
+    const imageRect = cropImage.getBoundingClientRect();
+
+    const scaleX = cropImage.naturalWidth / imageRect.width;
+    const scaleY = cropImage.naturalHeight / imageRect.height;
+
+    const cropX = (selectionRect.left - imageRect.left) * scaleX;
+    const cropY = (selectionRect.top - imageRect.top) * scaleY;
+    const cropWidth = selectionRect.width * scaleX;
+    const cropHeight = selectionRect.height * scaleY;
+
+    if (cropWidth < 10 || cropHeight < 10) {
+      alert("Выделите область фотографии");
+      return;
+    }
+
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+
+    const outputWidth = 900;
+    const outputHeight = Math.round(outputWidth * 9 / 16);
+
+    canvas.width = outputWidth;
+    canvas.height = outputHeight;
+
+    context.drawImage(
+      cropImage,
+      cropX,
+      cropY,
+      cropWidth,
+      cropHeight,
+      0,
+      0,
+      outputWidth,
+      outputHeight
+    );
+
+    currentCropItem.photo = canvas.toDataURL("image/jpeg", 0.85);
+
+    saveData(loadData());
+    closeCropModal();
+    renderAll();
+  };
+
+  document.getElementById("cropCancel").onclick = closeCropModal;
 
   document.getElementById("addLesson").onclick = () => {
     const data = loadData();
@@ -298,9 +449,10 @@
     const data = loadData();
 
     data.sideNews.push({
-      type: "news",
+      type: "achievement",
       date: "Сегодня",
-      text: "Новая запись"
+      text: "Новое достижение",
+      photo: ""
     });
 
     saveData(data);

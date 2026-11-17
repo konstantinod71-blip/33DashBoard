@@ -10,7 +10,12 @@
 
 <header>
   <div class="logo">
-    <div class="logo-mark">Ш</div>
+    <img
+      class="logo-image"
+      src="image.png"
+      alt="Логотип школы"
+    >
+
     <div>
       <h1>Школьный дашборд</h1>
       <p>Расписание, новости и достижения</p>
@@ -32,6 +37,17 @@
   </div>
 </header>
 
+<div class="timeline">
+  <div class="timeline-info">
+    <span id="timelineLabel">Определение времени…</span>
+    <span id="timelineTime">--:--</span>
+  </div>
+
+  <div class="timeline-bar">
+    <div class="timeline-progress" id="timelineProgress"></div>
+  </div>
+</div>
+
 <main>
   <aside class="side-panel">
     <h2>Новости и достижения</h2>
@@ -44,7 +60,21 @@
       <div class="current-lesson" id="currentLesson">Определение урока…</div>
     </div>
 
-    <div class="classes" id="classes"></div>
+    <div class="schedule-columns">
+      <div class="schedule-column">
+        <h3>Сейчас</h3>
+        <div class="vertical-marquee">
+          <div class="vertical-inner" id="currentClasses"></div>
+        </div>
+      </div>
+
+      <div class="schedule-column">
+        <h3>Следующий урок</h3>
+        <div class="vertical-marquee">
+          <div class="vertical-inner" id="nextClasses"></div>
+        </div>
+      </div>
+    </div>
   </section>
 </main>
 
@@ -55,52 +85,74 @@
 <script>
   const DEFAULT_DATA = {
     lessons: [
-      { start: 480, end: 525, name: "1 урок", subject: "Математика" },
-      { start: 540, end: 585, name: "2 урок", subject: "Русский язык" },
-      { start: 600, end: 645, name: "3 урок", subject: "Физика" },
-      { start: 675, end: 720, name: "4 урок", subject: "Информатика" },
-      { start: 750, end: 795, name: "5 урок", subject: "История" },
-      { start: 810, end: 855, name: "6 урок", subject: "Английский язык" }
+      { start: 495, end: 535, name: "1 урок", subject: "Математика" },
+      { start: 545, end: 585, name: "2 урок", subject: "Русский язык" },
+      { start: 595, end: 635, name: "3 урок", subject: "Литература" },
+      { start: 645, end: 685, name: "4 урок", subject: "История" },
+      { start: 695, end: 735, name: "5 урок", subject: "Английский язык" },
+      { start: 745, end: 785, name: "6 урок", subject: "Физика" },
+      { start: 795, end: 835, name: "7 урок", subject: "Информатика" },
+      { start: 845, end: 885, name: "8 урок", subject: "Химия" },
+      { start: 895, end: 935, name: "9 урок", subject: "Биология" },
+      { start: 945, end: 985, name: "10 урок", subject: "География" }
     ],
     classes: [
       { name: "5 «А»", room: "Каб. 12", teacher: "Иванова А. П." },
-      { name: "6 «Б»", room: "Каб. 24", teacher: "Петров С. В." },
+      { name: "5 «Б»", room: "Каб. 13", teacher: "Николаева О. В." },
+      { name: "6 «А»", room: "Каб. 24", teacher: "Петров С. В." },
+      { name: "6 «Б»", room: "Каб. 25", teacher: "Фёдоров И. И." },
       { name: "7 «А»", room: "Каб. 31", teacher: "Смирнова Е. Н." },
-      { name: "8 «Б»", room: "Каб. 18", teacher: "Кузнецов Д. А." },
+      { name: "7 «Б»", room: "Каб. 32", teacher: "Павлова Н. С." },
+      { name: "8 «А»", room: "Каб. 18", teacher: "Алексеев Р. П." },
+      { name: "8 «Б»", room: "Каб. 19", teacher: "Кузнецов Д. А." },
       { name: "9 «А»", room: "Каб. 22", teacher: "Орлова М. И." },
+      { name: "9 «Б»", room: "Каб. 23", teacher: "Егорова Л. А." },
       { name: "10 «А»", room: "Каб. 40", teacher: "Соколов В. В." },
-      { name: "11 «Б»", room: "Каб. 45", teacher: "Морозова Т. С." }
+      { name: "10 «Б»", room: "Каб. 41", teacher: "Григорьев А. Н." },
+      { name: "11 «А»", room: "Каб. 46", teacher: "Семёнова В. К." },
+      { name: "11 «Б»", room: "Каб. 47", teacher: "Морозова Т. С." }
     ],
     sideNews: [
       {
         type: "news",
         date: "Сегодня",
-        text: "Родительское собрание для 9 классов состоится в 18:00 в актовом зале."
+        text: "Родительское собрание для 9 классов состоится в 18:00 в актовом зале.",
+        photo: ""
       },
       {
         type: "achievement",
         date: "Достижение",
-        text: "Команда 10 «А» заняла 1 место в городском конкурсе по программированию."
+        text: "Команда 10 «А» заняла 1 место в городском конкурсе по программированию.",
+        photo: ""
       },
       {
         type: "achievement",
         date: "Достижение",
-        text: "Ученица 8 «Б» стала призёром региональной олимпиады по математике."
+        text: "Ученица 8 «Б» стала призёром региональной олимпиады по математике.",
+        photo: ""
+      },
+      {
+        type: "news",
+        date: "Завтра",
+        text: "День открытых дверей для будущих первоклассников.",
+        photo: ""
       }
     ],
     tickerNews: [
       "Добро пожаловать в школу!",
       "Не забудьте сдать библиотечные книги до пятницы.",
       "Фотокросс состоится в субботу в 11:00.",
-      "Поздравляем победителей школьной олимпиады!"
+      "Поздравляем победителей школьной олимпиады!",
+      "Следите за расписанием и не опаздывайте на уроки."
     ]
   };
 
-  const LAT = 52.034;
-  const LON = 113.499;
+  const CITY = "Якутск";
+  const LAT = 62.0281;
+  const LON = 129.7326;
 
-  const CLASS_MARQUEE_SPEED = 25;
-  const NEWS_MARQUEE_SPEED = 35;
+  const CLASS_MARQUEE_SPEED = 10;
+  const NEWS_MARQUEE_SPEED = 8;
 
   function loadData() {
     const saved = localStorage.getItem("schoolDashboardData");
@@ -120,13 +172,49 @@
     return `${pad(Math.floor(minutes / 60))}:${pad(minutes % 60)}`;
   }
 
+  function formatRemaining(minutes) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+
+    if (hours > 0) {
+      return `${hours} ч ${mins} мин`;
+    }
+
+    return `${mins} мин`;
+  }
+
   function setMarqueeSpeed(track, speed) {
     requestAnimationFrame(() => {
-      const contentWidth = track.scrollWidth / 2;
+      const container = track.parentElement;
+      const containerWidth = container.clientWidth;
+
+      let contentWidth = track.scrollWidth / 2;
+
+      while (contentWidth < containerWidth * 2) {
+        const spans = Array.from(track.children);
+
+        spans.forEach(span => {
+          const copy = span.cloneNode(true);
+          track.appendChild(copy);
+        });
+
+        contentWidth = track.scrollWidth / 2;
+      }
 
       if (contentWidth > 0) {
         const duration = contentWidth / speed;
         track.style.setProperty("--marquee-duration", `${duration}s`);
+      }
+    });
+  }
+
+  function setVerticalSpeed(track, speed) {
+    requestAnimationFrame(() => {
+      const contentHeight = track.scrollHeight / 2;
+
+      if (contentHeight > 0) {
+        const duration = contentHeight / speed;
+        track.style.setProperty("--vertical-duration", `${duration}s`);
       }
     });
   }
@@ -137,20 +225,21 @@
     document.getElementById("clock").textContent =
       `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 
-    updateSchedule(now.getHours() * 60 + now.getMinutes());
+    updateTimeline(now.getHours() * 60 + now.getMinutes());
   }
 
-  function updateSchedule(nowMinutes) {
+  function updateTimeline(nowMinutes) {
     const data = loadData();
-    const classesBox = document.getElementById("classes");
-    const currentLesson = document.getElementById("currentLesson");
+    const lessons = data.lessons;
 
-    classesBox.innerHTML = "";
+    const label = document.getElementById("timelineLabel");
+    const time = document.getElementById("timelineTime");
+    const progress = document.getElementById("timelineProgress");
 
     let activeLesson = null;
     let nextLesson = null;
 
-    data.lessons.forEach(lesson => {
+    lessons.forEach(lesson => {
       if (nowMinutes >= lesson.start && nowMinutes < lesson.end) {
         activeLesson = lesson;
       }
@@ -161,61 +250,180 @@
     });
 
     if (activeLesson) {
-      currentLesson.textContent =
-        `Сейчас: ${activeLesson.name} — ${activeLesson.subject}`;
-    } else if (nextLesson) {
-      currentLesson.textContent =
-        `Далее в ${formatTime(nextLesson.start)}: ${nextLesson.subject}`;
-    } else {
-      currentLesson.textContent = "Уроки на сегодня завершены";
+      const total = activeLesson.end - activeLesson.start;
+      const passed = nowMinutes - activeLesson.start;
+      const remaining = activeLesson.end - nowMinutes;
+
+      const lessonNumber = activeLesson.name.replace(" урок", "");
+
+      label.textContent = `До конца урока ${lessonNumber}`;
+      time.textContent = formatRemaining(remaining);
+
+      progress.style.width = `${(passed / total) * 100}%`;
+      progress.style.background = "var(--orange)";
+
+      return;
     }
 
-    data.classes.forEach((schoolClass, index) => {
-      const lesson = data.lessons[index % data.lessons.length];
+    if (nextLesson) {
+      const breakEnd = nextLesson.start;
+      const breakStart = nextLesson.start - 10;
 
-      const card = document.createElement("div");
-      card.className = "class-card";
+      if (nowMinutes >= breakStart && nowMinutes < breakEnd) {
+        const total = breakEnd - breakStart;
+        const passed = nowMinutes - breakStart;
+        const remaining = breakEnd - nowMinutes;
 
-      if (activeLesson === lesson) {
-        card.classList.add("now");
-      } else if (nextLesson === lesson) {
-        card.classList.add("next");
+        label.textContent = "До конца перемены";
+        time.textContent = formatRemaining(remaining);
+
+        progress.style.width = `${(passed / total) * 100}%`;
+        progress.style.background = "var(--yellow)";
+
+        return;
       }
 
-      let status = "Ожидание";
+      const remaining = nextLesson.start - nowMinutes;
+      const lessonNumber = nextLesson.name.replace(" урок", "");
 
-      if (activeLesson === lesson) {
-        status = "Сейчас";
-      } else if (nextLesson === lesson) {
-        status = "Далее";
+      label.textContent = `До начала урока ${lessonNumber}`;
+      time.textContent = formatRemaining(remaining);
+
+      progress.style.width = "0%";
+      progress.style.background = "var(--yellow)";
+
+      return;
+    }
+
+    label.textContent = "Уроки на сегодня завершены";
+    time.textContent = "";
+
+    progress.style.width = "100%";
+    progress.style.background = "var(--orange)";
+  }
+
+  function updateSchedule() {
+    const now = new Date();
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+    const data = loadData();
+    const currentLesson = document.getElementById("currentLesson");
+
+    const currentBox = document.getElementById("currentClasses");
+    const nextBox = document.getElementById("nextClasses");
+
+    currentBox.innerHTML = "";
+    nextBox.innerHTML = "";
+
+    const upcomingLessons = data.lessons.filter(
+      lesson => lesson.end > nowMinutes
+    );
+
+    let activeLesson = null;
+    let nextLesson = null;
+
+    upcomingLessons.forEach(lesson => {
+      if (nowMinutes >= lesson.start && nowMinutes < lesson.end) {
+        activeLesson = lesson;
       }
+
+      if (!nextLesson && lesson.start > nowMinutes) {
+        nextLesson = lesson;
+      }
+    });
+
+    if (activeLesson) {
+      const lessonNumber = activeLesson.name.replace(" урок", "");
+
+      currentLesson.textContent = `Урок ${lessonNumber}`;
+    } else if (nextLesson) {
+      const lessonNumber = nextLesson.name.replace(" урок", "");
+
+      currentLesson.textContent = `Далее: урок ${lessonNumber}`;
+    } else {
+      currentLesson.textContent = "Уроки завершены";
+    }
+
+    const currentClasses = [];
+    const nextClasses = [];
+
+    upcomingLessons.forEach((lesson, index) => {
+      const schoolClass = data.classes[index % data.classes.length];
 
       const text =
-        `${lesson.name} · ${lesson.subject} · ` +
+        `${schoolClass.name} · ${lesson.subject} · ` +
         `${formatTime(lesson.start)}–${formatTime(lesson.end)} · ` +
         `${schoolClass.room} · ${schoolClass.teacher}`;
 
-      card.innerHTML = `
-        <div class="class-title">
-          <strong>${schoolClass.name}</strong>
-          <span class="status">${status}</span>
-        </div>
+      if (activeLesson === lesson) {
+        currentClasses.push({
+          text,
+          status: "Сейчас"
+        });
+      }
 
-        <div class="marquee">
-          <div class="marquee-inner">
-            <span>${text}</span>
-            <span>${text}</span>
-            <span>${text}</span>
-            <span>${text}</span>
-          </div>
-        </div>
-      `;
-
-      classesBox.appendChild(card);
-
-      const track = card.querySelector(".marquee-inner");
-      setMarqueeSpeed(track, CLASS_MARQUEE_SPEED);
+      if (nextLesson === lesson) {
+        nextClasses.push({
+          text,
+          status: "Далее"
+        });
+      }
     });
+
+    if (currentClasses.length === 0) {
+      currentClasses.push({
+        text: "Сейчас уроков нет",
+        status: "Ожидание"
+      });
+    }
+
+    if (nextClasses.length === 0) {
+      nextClasses.push({
+        text: "Следующих уроков нет",
+        status: "Ожидание"
+      });
+    }
+
+    fillVerticalMarquee(currentBox, currentClasses, CLASS_MARQUEE_SPEED);
+    fillVerticalMarquee(nextBox, nextClasses, CLASS_MARQUEE_SPEED);
+  }
+
+  function createClassCard(item) {
+    const card = document.createElement("div");
+    card.className = "class-card";
+
+    const className = item.text.split(" · ")[0];
+
+    card.innerHTML = `
+      <div class="class-title">
+        <strong>${className}</strong>
+        <span class="status">${item.status}</span>
+      </div>
+
+      <div class="marquee">
+        <div class="marquee-inner">
+          <span>${item.text}</span>
+          <span>${item.text}</span>
+        </div>
+      </div>
+    `;
+
+    const track = card.querySelector(".marquee-inner");
+    setMarqueeSpeed(track, CLASS_MARQUEE_SPEED);
+
+    return card;
+  }
+
+  function fillVerticalMarquee(box, items, speed) {
+    const repeats = 4;
+
+    for (let i = 0; i < repeats; i++) {
+      items.forEach(item => {
+        box.appendChild(createClassCard(item));
+      });
+    }
+
+    setVerticalSpeed(box, speed);
   }
 
   function renderSidePanel() {
@@ -230,7 +438,20 @@
       block.className =
         item.type === "achievement" ? "achievement" : "news-item";
 
+      let photoHTML = "";
+
+      if (item.type === "achievement" && item.photo) {
+        photoHTML = `
+          <img
+            class="achievement-photo"
+            src="${item.photo}"
+            alt="Фото достижения"
+          >
+        `;
+      }
+
       block.innerHTML = `
+        ${photoHTML}
         <time>${item.date}</time>
         ${item.text}
       `;
@@ -265,8 +486,8 @@
     const url =
       `https://api.open-meteo.com/v1/forecast` +
       `?latitude=${LAT}&longitude=${LON}` +
-      `&current=temperature_2m,wind_speed_10m` +
-      `&timezone=Asia%2FChita`;
+      `&current=temperature_2m,weather_code,wind_speed_10m` +
+      `&timezone=Asia%2FYakutsk`;
 
     try {
       const response = await fetch(url);
@@ -276,14 +497,18 @@
       const wind = Math.round(data.current.wind_speed_10m);
 
       document.getElementById("weather").textContent =
-        `${temperature}°C · ветер ${wind} км/ч`;
+        `${CITY}: ${temperature}°C · ветер ${wind} км/ч`;
     } catch {
-      document.getElementById("weather").textContent = "Нет данных";
+      document.getElementById("weather").textContent =
+        `${CITY}: нет данных`;
     }
   }
 
   updateClock();
   setInterval(updateClock, 1000);
+
+  updateSchedule();
+  setInterval(updateSchedule, 30000);
 
   renderSidePanel();
   renderTicker();
@@ -291,17 +516,29 @@
   loadWeather();
   setInterval(loadWeather, 10 * 60 * 1000);
 
-  window.addEventListener("resize", () => {
-    document
-      .querySelectorAll(".marquee-inner, .news-ticker-inner")
-      .forEach(track => {
-        const isClassTrack = track.closest(".marquee");
-        const speed = isClassTrack
-          ? CLASS_MARQUEE_SPEED
-          : NEWS_MARQUEE_SPEED;
+  let resizeTimer;
 
-        setMarqueeSpeed(track, speed);
-      });
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+
+    resizeTimer = setTimeout(() => {
+      document
+        .querySelectorAll(".marquee-inner, .news-ticker-inner")
+        .forEach(track => {
+          const isClassTrack = track.closest(".marquee");
+          const speed = isClassTrack
+            ? CLASS_MARQUEE_SPEED
+            : NEWS_MARQUEE_SPEED;
+
+          setMarqueeSpeed(track, speed);
+        });
+
+      document
+        .querySelectorAll(".vertical-inner")
+        .forEach(track => {
+          setVerticalSpeed(track, CLASS_MARQUEE_SPEED);
+        });
+    }, 200);
   });
 </script>
 
