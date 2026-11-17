@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Школьный дашборд</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">Ш</div>
+    <div>
+      <h1>Школьный дашборд</h1>
+      <p>Расписание, новости и достижения</p>
+    </div>
+  </div>
+
+  <div class="header-info">
+    <div class="info-card">
+      <div class="label">Время</div>
+      <div class="value" id="clock">--:--:--</div>
+    </div>
+
+    <div class="info-card">
+      <div class="label">Погода</div>
+      <div class="value" id="weather">Загрузка…</div>
+    </div>
+
+    <a class="admin-link" href="admin.html">Изменить расписание</a>
+  </div>
+</header>
+
+<main>
+  <aside class="side-panel">
+    <h2>Новости и достижения</h2>
+    <div id="sidePanelContent"></div>
+  </aside>
+
+  <section class="schedule">
+    <div class="schedule-head">
+      <h2>Расписание на сегодня</h2>
+      <div class="current-lesson" id="currentLesson">Определение урока…</div>
+    </div>
+
+    <div class="classes" id="classes"></div>
+  </section>
+</main>
+
+<div class="news-ticker">
+  <div class="news-ticker-inner" id="newsTicker"></div>
+</div>
+
+<script>
+  const DEFAULT_DATA = {
+    lessons: [
+      { start: 480, end: 525, name: "1 урок", subject: "Математика" },
+      { start: 540, end: 585, name: "2 урок", subject: "Русский язык" },
+      { start: 600, end: 645, name: "3 урок", subject: "Физика" },
+      { start: 675, end: 720, name: "4 урок", subject: "Информатика" },
+      { start: 750, end: 795, name: "5 урок", subject: "История" },
+      { start: 810, end: 855, name: "6 урок", subject: "Английский язык" }
+    ],
+    classes: [
+      { name: "5 «А»", room: "Каб. 12", teacher: "Иванова А. П." },
+      { name: "6 «Б»", room: "Каб. 24", teacher: "Петров С. В." },
+      { name: "7 «А»", room: "Каб. 31", teacher: "Смирнова Е. Н." },
+      { name: "8 «Б»", room: "Каб. 18", teacher: "Кузнецов Д. А." },
+      { name: "9 «А»", room: "Каб. 22", teacher: "Орлова М. И." },
+      { name: "10 «А»", room: "Каб. 40", teacher: "Соколов В. В." },
+      { name: "11 «Б»", room: "Каб. 45", teacher: "Морозова Т. С." }
+    ],
+    sideNews: [
+      {
+        type: "news",
+        date: "Сегодня",
+        text: "Родительское собрание для 9 классов состоится в 18:00 в актовом зале."
+      },
+      {
+        type: "achievement",
+        date: "Достижение",
+        text: "Команда 10 «А» заняла 1 место в городском конкурсе по программированию."
+      },
+      {
+        type: "achievement",
+        date: "Достижение",
+        text: "Ученица 8 «Б» стала призёром региональной олимпиады по математике."
+      }
+    ],
+    tickerNews: [
+      "Добро пожаловать в школу!",
+      "Не забудьте сдать библиотечные книги до пятницы.",
+      "Фотокросс состоится в субботу в 11:00.",
+      "Поздравляем победителей школьной олимпиады!"
+    ]
+  };
+
+  const LAT = 52.034;
+  const LON = 113.499;
+
+  const CLASS_MARQUEE_SPEED = 25;
+  const NEWS_MARQUEE_SPEED = 35;
+
+  function loadData() {
+    const saved = localStorage.getItem("schoolDashboardData");
+
+    if (!saved) {
+      return structuredClone(DEFAULT_DATA);
+    }
+
+    return JSON.parse(saved);
+  }
+
+  function pad(number) {
+    return String(number).padStart(2, "0");
+  }
+
+  function formatTime(minutes) {
+    return `${pad(Math.floor(minutes / 60))}:${pad(minutes % 60)}`;
+  }
+
+  function setMarqueeSpeed(track, speed) {
+    requestAnimationFrame(() => {
+      const contentWidth = track.scrollWidth / 2;
+
+      if (contentWidth > 0) {
+        const duration = contentWidth / speed;
+        track.style.setProperty("--marquee-duration", `${duration}s`);
+      }
+    });
+  }
+
+  function updateClock() {
+    const now = new Date();
+
+    document.getElementById("clock").textContent =
+      `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+    updateSchedule(now.getHours() * 60 + now.getMinutes());
+  }
+
+  function updateSchedule(nowMinutes) {
+    const data = loadData();
+    const classesBox = document.getElementById("classes");
+    const currentLesson = document.getElementById("currentLesson");
+
+    classesBox.innerHTML = "";
+
+    let activeLesson = null;
+    let nextLesson = null;
+
+    data.lessons.forEach(lesson => {
+      if (nowMinutes >= lesson.start && nowMinutes < lesson.end) {
+        activeLesson = lesson;
+      }
+
+      if (!nextLesson && lesson.start > nowMinutes) {
+        nextLesson = lesson;
+      }
+    });
+
+    if (activeLesson) {
+      currentLesson.textContent =
+        `Сейчас: ${activeLesson.name} — ${activeLesson.subject}`;
+    } else if (nextLesson) {
+      currentLesson.textContent =
+        `Далее в ${formatTime(nextLesson.start)}: ${nextLesson.subject}`;
+    } else {
+      currentLesson.textContent = "Уроки на сегодня завершены";
+    }
+
+    data.classes.forEach((schoolClass, index) => {
+      const lesson = data.lessons[index % data.lessons.length];
+
+      const card = document.createElement("div");
+      card.className = "class-card";
+
+      if (activeLesson === lesson) {
+        card.classList.add("now");
+      } else if (nextLesson === lesson) {
+        card.classList.add("next");
+      }
+
+      let status = "Ожидание";
+
+      if (activeLesson === lesson) {
+        status = "Сейчас";
+      } else if (nextLesson === lesson) {
+        status = "Далее";
+      }
+
+      const text =
+        `${lesson.name} · ${lesson.subject} · ` +
+        `${formatTime(lesson.start)}–${formatTime(lesson.end)} · ` +
+        `${schoolClass.room} · ${schoolClass.teacher}`;
+
+      card.innerHTML = `
+        <div class="class-title">
+          <strong>${schoolClass.name}</strong>
+          <span class="status">${status}</span>
+        </div>
+
+        <div class="marquee">
+          <div class="marquee-inner">
+            <span>${text}</span>
+            <span>${text}</span>
+            <span>${text}</span>
+            <span>${text}</span>
+          </div>
+        </div>
+      `;
+
+      classesBox.appendChild(card);
+
+      const track = card.querySelector(".marquee-inner");
+      setMarqueeSpeed(track, CLASS_MARQUEE_SPEED);
+    });
+  }
+
+  function renderSidePanel() {
+    const data = loadData();
+    const box = document.getElementById("sidePanelContent");
+
+    box.innerHTML = "";
+
+    data.sideNews.forEach(item => {
+      const block = document.createElement("div");
+
+      block.className =
+        item.type === "achievement" ? "achievement" : "news-item";
+
+      block.innerHTML = `
+        <time>${item.date}</time>
+        ${item.text}
+      `;
+
+      box.appendChild(block);
+    });
+  }
+
+  function renderTicker() {
+    const data = loadData();
+    const ticker = document.getElementById("newsTicker");
+
+    ticker.innerHTML = `
+      <div class="news-ticker-inner"></div>
+    `;
+
+    const track = ticker.querySelector(".news-ticker-inner");
+    const repeats = 4;
+
+    for (let i = 0; i < repeats; i++) {
+      data.tickerNews.forEach(text => {
+        const span = document.createElement("span");
+        span.textContent = text;
+        track.appendChild(span);
+      });
+    }
+
+    setMarqueeSpeed(track, NEWS_MARQUEE_SPEED);
+  }
+
+  async function loadWeather() {
+    const url =
+      `https://api.open-meteo.com/v1/forecast` +
+      `?latitude=${LAT}&longitude=${LON}` +
+      `&current=temperature_2m,wind_speed_10m` +
+      `&timezone=Asia%2FChita`;
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      const temperature = Math.round(data.current.temperature_2m);
+      const wind = Math.round(data.current.wind_speed_10m);
+
+      document.getElementById("weather").textContent =
+        `${temperature}°C · ветер ${wind} км/ч`;
+    } catch {
+      document.getElementById("weather").textContent = "Нет данных";
+    }
+  }
+
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  renderSidePanel();
+  renderTicker();
+
+  loadWeather();
+  setInterval(loadWeather, 10 * 60 * 1000);
+
+  window.addEventListener("resize", () => {
+    document
+      .querySelectorAll(".marquee-inner, .news-ticker-inner")
+      .forEach(track => {
+        const isClassTrack = track.closest(".marquee");
+        const speed = isClassTrack
+          ? CLASS_MARQUEE_SPEED
+          : NEWS_MARQUEE_SPEED;
+
+        setMarqueeSpeed(track, speed);
+      });
+  });
+</script>
+
+</body>
+</html>

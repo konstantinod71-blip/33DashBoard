@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Редактор дашборда</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">✎</div>
+    <div>
+      <h1>Редактор дашборда</h1>
+      <p>Расписание, классы, новости и достижения</p>
+    </div>
+  </div>
+
+  <div class="header-info">
+    <a class="admin-link" href="index.html">Вернуться на дашборд</a>
+  </div>
+</header>
+
+<main>
+  <section class="editor">
+    <h2>Уроки</h2>
+    <div id="lessonsEditor"></div>
+
+    <button class="add-button" id="addLesson">Добавить урок</button>
+
+    <h2>Классы</h2>
+    <div id="classesEditor"></div>
+
+    <button class="add-button" id="addClass">Добавить класс</button>
+
+    <h2>Новости и достижения</h2>
+    <div id="sideNewsEditor"></div>
+
+    <button class="add-button" id="addSideNews">Добавить запись</button>
+
+    <h2>Бегущая строка</h2>
+    <textarea id="tickerNews" rows="6" placeholder="Каждая новость — с новой строки"></textarea>
+
+    <div class="editor-actions">
+      <button id="saveButton">Сохранить изменения</button>
+      <button id="resetButton">Сбросить настройки</button>
+    </div>
+  </section>
+</main>
+
+<script>
+  const DEFAULT_DATA = {
+    lessons: [
+      { start: 480, end: 525, name: "1 урок", subject: "Математика" },
+      { start: 540, end: 585, name: "2 урок", subject: "Русский язык" },
+      { start: 600, end: 645, name: "3 урок", subject: "Физика" },
+      { start: 675, end: 720, name: "4 урок", subject: "Информатика" },
+      { start: 750, end: 795, name: "5 урок", subject: "История" },
+      { start: 810, end: 855, name: "6 урок", subject: "Английский язык" }
+    ],
+    classes: [
+      { name: "5 «А»", room: "Каб. 12", teacher: "Иванова А. П." },
+      { name: "6 «Б»", room: "Каб. 24", teacher: "Петров С. В." },
+      { name: "7 «А»", room: "Каб. 31", teacher: "Смирнова Е. Н." },
+      { name: "8 «Б»", room: "Каб. 18", teacher: "Кузнецов Д. А." },
+      { name: "9 «А»", room: "Каб. 22", teacher: "Орлова М. И." },
+      { name: "10 «А»", room: "Каб. 40", teacher: "Соколов В. В." },
+      { name: "11 «Б»", room: "Каб. 45", teacher: "Морозова Т. С." }
+    ],
+    sideNews: [
+      {
+        type: "news",
+        date: "Сегодня",
+        text: "Родительское собрание для 9 классов состоится в 18:00 в актовом зале."
+      },
+      {
+        type: "achievement",
+        date: "Достижение",
+        text: "Команда 10 «А» заняла 1 место в городском конкурсе по программированию."
+      }
+    ],
+    tickerNews: [
+      "Добро пожаловать в школу!",
+      "Не забудьте сдать библиотечные книги до пятницы.",
+      "Фотокросс состоится в субботу в 11:00."
+    ]
+  };
+
+  function loadData() {
+    const saved = localStorage.getItem("schoolDashboardData");
+
+    if (!saved) {
+      return structuredClone(DEFAULT_DATA);
+    }
+
+    return JSON.parse(saved);
+  }
+
+  function saveData(data) {
+    localStorage.setItem("schoolDashboardData", JSON.stringify(data));
+  }
+
+  function timeToMinutes(value) {
+    const parts = value.split(":");
+    const hours = Number(parts[0]);
+    const minutes = Number(parts[1]);
+
+    return hours * 60 + minutes;
+  }
+
+  function minutesToTime(minutes) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+
+    return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
+  }
+
+  function createInput(value, placeholder) {
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = value;
+    input.placeholder = placeholder;
+
+    return input;
+  }
+
+  function createRemoveButton(onClick) {
+    const button = document.createElement("button");
+    button.className = "remove-button";
+    button.textContent = "Удалить";
+    button.onclick = onClick;
+
+    return button;
+  }
+
+  function renderLessons(data) {
+    const box = document.getElementById("lessonsEditor");
+    box.innerHTML = "";
+
+    data.lessons.forEach((lesson, index) => {
+      const row = document.createElement("div");
+      row.className = "editor-row lessons-row";
+
+      const startTime = document.createElement("input");
+      startTime.type = "time";
+      startTime.value = minutesToTime(lesson.start);
+
+      const endTime = document.createElement("input");
+      endTime.type = "time";
+      endTime.value = minutesToTime(lesson.end);
+
+      const name = createInput(lesson.name, "Название урока");
+      const subject = createInput(lesson.subject, "Предмет");
+
+      startTime.onchange = () => {
+        lesson.start = timeToMinutes(startTime.value);
+      };
+
+      endTime.onchange = () => {
+        lesson.end = timeToMinutes(endTime.value);
+      };
+
+      name.oninput = () => {
+        lesson.name = name.value;
+      };
+
+      subject.oninput = () => {
+        lesson.subject = subject.value;
+      };
+
+      const removeButton = createRemoveButton(() => {
+        data.lessons.splice(index, 1);
+        saveData(data);
+        renderAll();
+      });
+
+      row.append(startTime, endTime, name, subject, removeButton);
+      box.appendChild(row);
+    });
+  }
+
+  function renderClasses(data) {
+    const box = document.getElementById("classesEditor");
+    box.innerHTML = "";
+
+    data.classes.forEach((schoolClass, index) => {
+      const row = document.createElement("div");
+      row.className = "editor-row classes-row";
+
+      const name = createInput(schoolClass.name, "Класс");
+      const room = createInput(schoolClass.room, "Кабинет");
+      const teacher = createInput(schoolClass.teacher, "Учитель");
+
+      name.oninput = () => {
+        schoolClass.name = name.value;
+      };
+
+      room.oninput = () => {
+        schoolClass.room = room.value;
+      };
+
+      teacher.oninput = () => {
+        schoolClass.teacher = teacher.value;
+      };
+
+      const removeButton = createRemoveButton(() => {
+        data.classes.splice(index, 1);
+        saveData(data);
+        renderAll();
+      });
+
+      row.append(name, room, teacher, removeButton);
+      box.appendChild(row);
+    });
+  }
+
+  function renderSideNews(data) {
+    const box = document.getElementById("sideNewsEditor");
+    box.innerHTML = "";
+
+    data.sideNews.forEach((item, index) => {
+      const row = document.createElement("div");
+      row.className = "editor-row news-row";
+
+      const type = document.createElement("select");
+      type.innerHTML = `
+        <option value="news">Новость</option>
+        <option value="achievement">Достижение</option>
+      `;
+      type.value = item.type;
+
+      const date = createInput(item.date, "Дата");
+      const text = createInput(item.text, "Текст");
+
+      type.onchange = () => {
+        item.type = type.value;
+      };
+
+      date.oninput = () => {
+        item.date = date.value;
+      };
+
+      text.oninput = () => {
+        item.text = text.value;
+      };
+
+      const removeButton = createRemoveButton(() => {
+        data.sideNews.splice(index, 1);
+        saveData(data);
+        renderAll();
+      });
+
+      row.append(type, date, text, removeButton);
+      box.appendChild(row);
+    });
+  }
+
+  function renderAll() {
+    const data = loadData();
+
+    renderLessons(data);
+    renderClasses(data);
+    renderSideNews(data);
+
+    document.getElementById("tickerNews").value =
+      data.tickerNews.join("\n");
+  }
+
+  document.getElementById("addLesson").onclick = () => {
+    const data = loadData();
+
+    data.lessons.push({
+      start: 480,
+      end: 525,
+      name: "Новый урок",
+      subject: "Предмет"
+    });
+
+    saveData(data);
+    renderAll();
+  };
+
+  document.getElementById("addClass").onclick = () => {
+    const data = loadData();
+
+    data.classes.push({
+      name: "Новый класс",
+      room: "Кабинет",
+      teacher: "Учитель"
+    });
+
+    saveData(data);
+    renderAll();
+  };
+
+  document.getElementById("addSideNews").onclick = () => {
+    const data = loadData();
+
+    data.sideNews.push({
+      type: "news",
+      date: "Сегодня",
+      text: "Новая запись"
+    });
+
+    saveData(data);
+    renderAll();
+  };
+
+  document.getElementById("saveButton").onclick = () => {
+    const data = loadData();
+
+    data.tickerNews = document
+      .getElementById("tickerNews")
+      .value
+      .split("\n")
+      .map(item => item.trim())
+      .filter(Boolean);
+
+    saveData(data);
+    alert("Изменения сохранены");
+  };
+
+  document.getElementById("resetButton").onclick = () => {
+    if (confirm("Сбросить все изменения и вернуть стандартные данные?")) {
+      localStorage.removeItem("schoolDashboardData");
+      renderAll();
+    }
+  };
+
+  renderAll();
+</script>
+
+</body>
+</html>

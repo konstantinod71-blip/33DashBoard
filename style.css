@@ -1,0 +1,395 @@
+:root {
+  --bg: #111111;
+  --panel: #1a1a1a;
+  --panel-2: #242424;
+  --line: #333333;
+  --line-soft: #2a2a2a;
+  --text: #f5f5f5;
+  --muted: #a3a3a3;
+  --accent: #ffffff;
+  --ok: #d4d4d4;
+  --warn: #bfbfbf;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Шапка */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 20px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 240px;
+}
+
+.logo-mark {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #000000;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+}
+
+.logo h1 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: .3px;
+}
+
+.logo p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.header-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.info-card {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 14px;
+  min-width: 120px;
+  text-align: center;
+}
+
+.info-card .label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+}
+
+.info-card .value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.admin-link {
+  display: inline-block;
+  padding: 11px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-2);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14px;
+  transition: border-color .2s ease, color .2s ease;
+}
+
+.admin-link:hover,
+.admin-link:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Основная сетка */
+main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px;
+  min-height: 0;
+}
+
+/* Левая панель */
+.side-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  overflow-y: auto;
+  max-height: calc(100vh - 190px);
+  position: sticky;
+  top: 16px;
+}
+
+.side-panel h2 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  color: var(--accent);
+}
+
+.news-item,
+.achievement {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.achievement {
+  border-left-color: var(--ok);
+}
+
+.news-item time,
+.achievement time {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+/* Расписание */
+.schedule {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.schedule-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.schedule-head h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.current-lesson {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--text);
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.classes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 14px;
+  align-content: start;
+  overflow-y: auto;
+  max-height: calc(100vh - 300px);
+  padding-right: 4px;
+}
+
+.class-card {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  min-width: 0;
+}
+
+.class-card.now {
+  border-color: var(--accent);
+}
+
+.class-card.next {
+  border-color: var(--warn);
+}
+
+.class-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.class-title strong {
+  font-size: 17px;
+}
+
+.status {
+  font-size: 11px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--line);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.now .status {
+  background: var(--accent);
+  color: #000000;
+}
+
+.next .status {
+  background: var(--warn);
+  color: #000000;
+}
+
+/* Бегущие строки */
+.marquee,
+.news-ticker {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.marquee {
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  background: var(--bg);
+  padding: 8px 0;
+}
+
+.marquee-inner,
+.news-ticker-inner {
+  display: inline-flex;
+  width: max-content;
+  will-change: transform;
+  animation: marquee-scroll linear infinite;
+  animation-duration: var(--marquee-duration, 30s);
+}
+
+.marquee:hover .marquee-inner,
+.news-ticker:hover .news-ticker-inner {
+  animation-play-state: paused;
+}
+
+.marquee-inner span,
+.news-ticker-inner span {
+  padding: 0 24px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.marquee-inner span::after,
+.news-ticker-inner span::after {
+  content: "•";
+  margin-left: 24px;
+  color: var(--muted);
+}
+
+.news-ticker {
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+  padding: 11px 0;
+}
+
+.news-ticker-inner span {
+  font-size: 15px;
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/* Адаптивность */
+@media (max-width: 1100px) {
+  main {
+    grid-template-columns: 260px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 950px) {
+  main {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .side-panel {
+    position: static;
+    max-height: none;
+    order: 2;
+  }
+
+  .schedule {
+    order: 1;
+  }
+
+  .classes {
+    max-height: none;
+  }
+}
+
+@media (max-width: 800px) {
+  .marquee-inner span,
+  .news-ticker-inner span {
+    font-size: 13px;
+    padding: 0 18px;
+  }
+
+  .marquee-inner span::after,
+  .news-ticker-inner span::after {
+    margin-left: 18px;
+  }
+}
+
+@media (max-width: 560px) {
+  header {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .header-info {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .info-card {
+    flex: 1 1 130px;
+  }
+
+  .admin-link {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-inner,
+  .news-ticker-inner {
+    animation: none;
+  }
+}
